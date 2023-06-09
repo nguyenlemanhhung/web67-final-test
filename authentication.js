@@ -10,7 +10,6 @@ const authentication = async (req, res, next) => {
     }
 
     const checkToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("checkExistToken", checkToken);
 
     if (!checkToken) {
       return res.status(401).json({ message: "not authenticated" });

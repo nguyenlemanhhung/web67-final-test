@@ -78,7 +78,7 @@ app.post("/login", async (req, res) => {
         expiresIn: "1d",
       }
     );
-    console.log("accessToken:", accessToken);
+    // console.log("accessToken:", accessToken);
 
     return res.status(200).json({
       user: checkExist,
@@ -88,6 +88,27 @@ app.post("/login", async (req, res) => {
     res.status(500).json(error);
   }
 });
+
+// 5.Only logged-in user can visit it
+app.get("/current", authentication, async (req, res) => {
+  try {
+    const userId = req.user;
+
+    const user = await client.db("web67").collection("users").findById(userId);
+
+    console.log("user: " + user);
+
+    if (!user) {
+      return res.json({ message: "Không có user" });
+    }
+    return res.json({
+      user: user,
+    });
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+});
+
 // 6.getting orders with the description
 app.get("/order", async (req, res) => {
   try {
@@ -106,6 +127,7 @@ app.get("/order", async (req, res) => {
     res.status(500).json(error);
   }
 });
+
 app.listen(process.env.PORT || 5000, () => {
   console.log(`listening on http://localhost/${process.env.PORT}`);
 });
