@@ -5,6 +5,7 @@ const app = express();
 const { connectDb, client } = require("./connectdb");
 const authentication = require("./authentication");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 app.use(express.json());
 
@@ -66,12 +67,6 @@ app.post("/login", async (req, res) => {
     if (!checkExist) {
       return res.status(401).json({ message: "Tài khoản không tồn tại !!!" });
     }
-    console.log("checkExist._id", checkExist._id);
-    // const checkPassword = bcrypt.compareSync(password, checkExist.password);
-
-    // if (!checkPassword) {
-    //   return res.status(401).json({ message: "Mật khẩu không chính xác" });
-    // }
     checkExist.password = "";
 
     const accessToken = jwt.sign(
