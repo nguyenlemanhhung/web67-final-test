@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const { connectDb, client } = require("./connectdb");
 const authentication = require("./authentication");
+const bcrypt = require("bcryptjs");
 
 app.use(express.json());
 
@@ -48,9 +49,9 @@ app.get("/api/products/low-quantity", async (req, res) => {
 });
 // 3.log-in
 
-app.post("/login", authentication, async (req, res) => {
+app.post("/login", async (req, res) => {
   try {
-    const username = req.body.email;
+    const username = req.body.username;
     const password = req.body.password;
 
     if (!username || !password) {
@@ -65,6 +66,29 @@ app.post("/login", authentication, async (req, res) => {
     if (!checkExist) {
       return res.status(401).json({ message: "Tài khoản không tồn tại !!!" });
     }
+    console.log("checkExist._id", checkExist._id);
+    // const checkPassword = bcrypt.compareSync(password, checkExist.password);
+
+    // if (!checkPassword) {
+    //   return res.status(401).json({ message: "Mật khẩu không chính xác" });
+    // }
+    checkExist.password = "";
+
+    const accessToken = jwt.sign(
+      {
+        userId: checkExist._id,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
+    console.log("accessToken:", accessToken);
+
+    return res.status(200).json({
+      user: checkExist,
+      token: accessToken,
+    });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -76,7 +100,6 @@ app.get("/order", async (req, res) => {
       .db("web67")
       .collection("order")
       .find()
-      .populate("item")
       .toArray();
 
     if (result) {
